@@ -1,0 +1,37 @@
+#center{
+	left:15%;
+	top:10%;
+	position:absolute;
+	width:1350px;
+}
+#content{
+	margin:0 auto;
+	padding-top:50px;
+	text-align:center;
+}
+h1{
+	font-family:'century gothic', arial, sans-serif;
+	margin-top:20%;
+	padding:0;
+	text-align:center;
+}
+.video{
+	background-repeat:no-repeat;
+	display:inline-block;
+	height:220px;
+	float:left;
+	margin:30 25 30 25;
+	position:relative;
+	width:400px;
+}
+video{
+	top:40px;
+	position:absolute;
+	/*width:96%;*/
+}
+.videobox{
+	border:1px solid #000000;
+	margin-top:-60px;
+	position:relative;
+	width:1680px;
+}
