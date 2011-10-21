@@ -134,6 +134,8 @@ public class SoundBox {
 	public void play(int id) {
 		Track track = clips.get(id);
 		if (track == null) return;
+		track.track.flush();
+		track.track.reloadStaticData();
 		track.track.play();
 	}
 	
@@ -165,6 +167,7 @@ public class SoundBox {
 	public void stop(int id) {
 		Track track = clips.get(id);
 		if (track == null) return;
+		track.track.flush();
 		track.track.stop();
 	}
 

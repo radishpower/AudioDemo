@@ -54,21 +54,59 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
 	    	this.getContext().startActivity(new Intent(this.getContext(), SoundActivity.class));
 	 }
 	
-	@Override
-	protected Bitmap processFrame(byte[] data) {
-		mYuv.put(0, 0, data);
-
-		switch (AudioDemoActivity.viewMode) {
-        case AudioDemoActivity.VIEW_MODE_AUDIO:
-            Process.Result result = processingobject.process(mYuv, getFrameHeight(), getFrameWidth(), mRgba);
-            if (result != null && result.threshold >= 500.0) {
-            	// we got the byte!
-            	Log.e("TAG", String.format("We got byte %d", result.value));
-            	if (result.value < 1000) {
-            		playSound(result.value);
-            	}
-            }
-            break;
+	 @Override
+		protected Bitmap processFrame(byte[] data) {
+			mYuv.put(0, 0, data);
+			SoundBox box = AudioDemoActivity.box;
+			switch (AudioDemoActivity.viewMode) {
+	        case AudioDemoActivity.VIEW_MODE_AUDIO:
+	            Process.Result result = processingobject.process(mYuv, getFrameHeight(), getFrameWidth(), mRgba);
+	            if (result != null && result.threshold >= 500.0) {
+	            	// we got the byte!
+	            	Log.e("TAG", String.format("We got byte %d", result.value));
+	            	if (result.value < 1000) {
+	            		int value = result.value;
+	            		String file = String.format("%02d.wav", value%AudioDemoActivity.numFiles);
+	            		if (!AudioDemoActivity.isPlaying){
+	            			Log.e("TAG", String.format("Current frame %d, Start playing %s", AudioDemoActivity.curFrame, file));
+	            			AudioDemoActivity.isPlaying = true;
+	            			AudioDemoActivity.curFrame = value%AudioDemoActivity.numFiles;
+	            			for (int i = 0; i<AudioDemoActivity.numFiles; ++i){
+	            				if (i != AudioDemoActivity.curFrame){
+	            					box.stop(i);
+	            				}
+	            			}
+	            			box.play(AudioDemoActivity.curFrame);
+	            		}
+	            		else if (AudioDemoActivity.isPlaying && AudioDemoActivity.curFrame != value%2){
+	            			Log.e("TAG", String.format("Current frame %d, Switch to playing %s", AudioDemoActivity.curFrame, file));
+	            			AudioDemoActivity.curFrame = value%AudioDemoActivity.numFiles;
+	            			for (int i = 0; i<AudioDemoActivity.numFiles; ++i){
+	            				if (i != AudioDemoActivity.curFrame){
+	            					box.stop(i);
+	            				}
+	            			}
+	            			box.play(AudioDemoActivity.curFrame);
+	            		}
+	            	}
+	            	else{
+	            		Log.e("TAG", String.format("Stop playing %02d.wav", AudioDemoActivity.curFrame));
+	            		AudioDemoActivity.isPlaying = false;
+	            		for (int i = 0; i<AudioDemoActivity.numFiles; ++i){
+	        				box.stop(i);
+	        			}
+	            	}
+	            }
+	            else{
+	            	if (AudioDemoActivity.isPlaying){
+	            		Log.e("TAG", String.format("Stop playing %02d.wav", AudioDemoActivity.curFrame));
+	            		AudioDemoActivity.isPlaying = false;
+	            		for (int i = 0; i<AudioDemoActivity.numFiles; ++i){
+	        				box.stop(i);
+	        			}
+	            	}
+	            }
+	            break;
         case AudioDemoActivity.VIEW_MODE_RGBA:
             Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
             Core.putText(mRgba, "Synaesthesia Demo", new Point(10, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1, new Scalar(255, 0, 0, 255), 3);

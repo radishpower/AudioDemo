@@ -20,8 +20,11 @@ public class AudioDemoActivity extends Activity {
 
 	public static MediaPlayer player;
 	static SoundBox box = null;
+	public static boolean isPlaying = false;
+	public static int curFrame = -1;
 	public static int[] ids;
 	public static int viewMode = VIEW_MODE_RGBA;
+	public static int numFiles = 8;
 
 	//public static final String AUDIO_DIR = "/Android/org.opencv.samples.radishower/sound_samples";
 	public static final String AUDIO_DIR = "/sound_samples/";
@@ -39,23 +42,15 @@ public class AudioDemoActivity extends Activity {
 		setContentView(new AudioDemoActivityView(this));
 
 		if (box == null) {
-			// iknitialize soundbox
+			// initialize soundbox
 			box = new SoundBox();
-			String[] files = {
-					Environment.getExternalStorageDirectory()
-							+ AudioDemoActivity.AUDIO_DIR + "00.wav",
-					Environment.getExternalStorageDirectory()
-							+ AudioDemoActivity.AUDIO_DIR + "01.wav",
-					Environment.getExternalStorageDirectory()
-							+ AudioDemoActivity.AUDIO_DIR + "02.wav",
-					Environment.getExternalStorageDirectory()
-							+ AudioDemoActivity.AUDIO_DIR + "03.wav"};
-
-			ids = new int[files.length];
-			ids[0] = box.load(files[0]);
-			ids[1] = box.load(files[1]);
-			ids[2] = box.load(files[2]);
-			ids[3] = box.load(files[3]);
+			String[] files = new String[numFiles];
+			ids = new int[numFiles];
+			for (int i = 0; i<numFiles; ++i){
+				files[i] = Environment.getExternalStorageDirectory() +
+								AudioDemoActivity.AUDIO_DIR + String.format("%02d", i) + ".wav";
+				ids[i] = box.load(files[i]);
+			}
 		}
 		/*
 		 * player = new MediaPlayer(); try {
@@ -92,9 +87,8 @@ public class AudioDemoActivity extends Activity {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		box.pause(0);
-		box.pause(1);
-		box.pause(2);
-		box.pause(3);
+		for (int i = 0; i<numFiles; ++i){
+			box.pause(ids[i]);
+		}
 	}
 }
