@@ -7,21 +7,21 @@ import android.widget.TextView;
 public class SoundActivity extends Activity {
 	static final String TAG = "SoundActivity";
 	static int musicID = 0;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.audioplaying);
 		TextView tv = new TextView(this);
-	    tv.setText("The current value: "+musicID);
-	    setContentView(tv);
-	    SoundBox box = AudioDemoActivity.box;
-	    for (int i=0; i<4; i++) {
-	    	box.pause(i);
-	    }
-	    box.play(musicID%4);
-	    setContentView(tv);
+		tv.setText("The current value: " + musicID);
+		setContentView(tv);
+		SoundBox box = AudioDemoActivity.box;
+		for (int i = 0; i < 4; i++) {
+			box.pause(i);
+		}
+		box.play(musicID % 4);
+		setContentView(tv);
 	}
 
 	@Override

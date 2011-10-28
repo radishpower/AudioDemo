@@ -26,7 +26,8 @@ public class AudioDemoActivity extends Activity {
 	public static int viewMode = VIEW_MODE_RGBA;
 	public static int numFiles = 8;
 
-	//public static final String AUDIO_DIR = "/Android/org.opencv.samples.radishower/sound_samples";
+	// public static final String AUDIO_DIR =
+	// "/Android/org.opencv.samples.radishower/sound_samples";
 	public static final String AUDIO_DIR = "/sound_samples/";
 
 	public AudioDemoActivity() {
@@ -46,9 +47,10 @@ public class AudioDemoActivity extends Activity {
 			box = new SoundBox();
 			String[] files = new String[numFiles];
 			ids = new int[numFiles];
-			for (int i = 0; i<numFiles; ++i){
-				files[i] = Environment.getExternalStorageDirectory() +
-								AudioDemoActivity.AUDIO_DIR + String.format("%02d", i) + ".wav";
+			for (int i = 0; i < numFiles; ++i) {
+				files[i] = Environment.getExternalStorageDirectory()
+						+ AudioDemoActivity.AUDIO_DIR
+						+ String.format("%02d", i) + ".wav";
 				ids[i] = box.load(files[i]);
 			}
 		}
@@ -87,7 +89,7 @@ public class AudioDemoActivity extends Activity {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		for (int i = 0; i<numFiles; ++i){
+		for (int i = 0; i < numFiles; ++i) {
 			box.pause(ids[i]);
 		}
 	}
