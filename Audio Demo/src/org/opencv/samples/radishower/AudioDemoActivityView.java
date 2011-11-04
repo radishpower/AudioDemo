@@ -115,7 +115,7 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
             break;
         case AudioDemoActivity.VIEW_MODE_RGBA:
             Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
-            Core.putText(mRgba, "Synaesthesia Demo", new Point(10, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1, new Scalar(255, 0, 0, 255), 3);
+            Core.putText(mRgba, "Synaesthesia Landscape Demo", new Point(10, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1, new Scalar(255, 0, 0, 255), 3);
             break;
         }
 

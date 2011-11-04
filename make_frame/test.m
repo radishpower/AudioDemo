@@ -8,7 +8,7 @@ gree = zeros(segy, segx, 3); gree(:,:,1) = 10/255.0; gree(:,:,2) = 128/255.0; gr
 im = zeros(segy, w, 3);
 
 original = bitget(headervalue, 8:-1:1);
-encoded = encodeit(original);
+encoded = encodeit(original)
 resultim = drawbyteyline(im, gray, gree, encoded);
 for index = 1:length(frameno)
 	original = bitget(frameno(index), 8:-1:1);
