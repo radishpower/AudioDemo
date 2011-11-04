@@ -14,10 +14,7 @@ public class Process {
 	private Mat mRgba = new Mat();
 	private Mat mGraySubmat = new Mat();
 	private Mat bwimg = new Mat();
-	private Mat rectified = new Mat();
 	private List<Point> corners = new ArrayList<Point>();
-	private int headervalue = 200;
-	private int[] results = new int[8];
 
 	public static class Result {
 		int value;
@@ -42,20 +39,26 @@ public class Process {
 		List<Mat> contours = new ArrayList<Mat>();
 		Mat unused = new Mat();
 
+		// Imgproc.threshold(mGraySubmat, bwimg, 40, 255,
+		// Imgproc.THRESH_BINARY_INV);
+		// Imgproc.adaptiveThreshold(mGraySubmat, bwimg, 255,
+		// Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 15, 12);
 		Imgproc.Canny(mGraySubmat, bwimg, 80, 100);
 		mGraySubmat = bwimg.clone();
 		Imgproc.findContours(mGraySubmat, contours, unused,
 				Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		Mat approxCurve = new Mat();
 		Imgproc.cvtColor(bwimg, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);
-		int count = 0;
 		for (int i = 0; i < contours.size(); i++) {
 			double tmpval = Imgproc.contourArea(contours.get(i));
 			if (tmpval > 1000) {
 				Imgproc.approxPolyDP(contours.get(i), approxCurve,
 						tmpval * 0.0001, true);
 				if (approxCurve.total() == 4) {
-					count = count + 1;
+					Imgproc.drawContours(mRgba, contours, i, new Scalar(255, 0,
+							0, 255));
+					// Make sure that the smallest coordinate gets added to
+					// upper left
 					int tl = 0;
 					int bl = 0;
 					int br = 0;
@@ -92,48 +95,36 @@ public class Process {
 
 					corners.set(0, new Point(approxCurve.get(tl, 0)[0],
 							approxCurve.get(tl, 0)[1]));
+					Core.circle(mRgba, corners.get(0), 10, new Scalar(255, 0,
+							0, 255));
 					corners.set(1, new Point(approxCurve.get(bl, 0)[0],
 							approxCurve.get(bl, 0)[1]));
+					Core.circle(mRgba, corners.get(1), 10, new Scalar(0, 255,
+							0, 255));
 					corners.set(2, new Point(approxCurve.get(br, 0)[0],
 							approxCurve.get(br, 0)[1]));
+					Core.circle(mRgba, corners.get(2), 10, new Scalar(0, 0,
+							255, 255));
 					corners.set(3, new Point(approxCurve.get(tr, 0)[0],
 							approxCurve.get(tr, 0)[1]));
+					Core.circle(mRgba, corners.get(3), 10, new Scalar(255, 255,
+							0, 255));
 
 					Imgproc.cvtColor(localYUV, mRgba,
 							Imgproc.COLOR_YUV420sp2RGB, 4);
-					int diam_size = 5;
-					List<Point> centerpoints = samplegrid(width, height,
-							(int) 0 * height, diam_size);
-					Mat rectified = perspective_transform(mRgba, width, height);
-					result = getOneByte(rectified, centerpoints, diam_size);
-					if (result.value == headervalue) {
-						for (int ii = 0; ii < 8; ii++) {
-							centerpoints = samplegrid(
-									width,
-									height,
-									(int) (width / 18) + (ii + 1) * (width / 9),
-									diam_size);
-							results[ii] = getOneByte(rectified, centerpoints,
-									diam_size).value;
-						}
-						break;
-					} else {
-						result = null;
-					}
+					mRgba = perspective_transform(mRgba, width, height);
+					result = samplegrid(mRgba, width, height);
+					break;
 				}
 			}
 		}
+
 		Imgproc.cvtColor(localYUV, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
+		Core.fillConvexPoly(mRgba, corners, new Scalar(0, 0, 128, 128));
 		if (result != null) {
-			Core.fillConvexPoly(mRgba, corners, new Scalar(0, 0, 128, 128));
-			Core.putText(mRgba, "S: " + Integer.toString(result.value),
-					new Point(10, 200), 3/* CV_FONT_HERSHEY_COMPLEX */, 2,
-					new Scalar(255, 0, 0, 255), 3);
-			for (int i = 0; i < 8; i++) {
-				Core.putText(mRgba, Integer.toString(results[i]) + " ",
-						new Point(i * 70, 100), 3/* CV_FONT_HERSHEY_COMPLEX */,
-						1, new Scalar(255, 0, 0, 255), 2);
-			}
+			Core.putText(mRgba, Integer.toString(result.value),
+					new Point(100, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1,
+					new Scalar(0, 255, 0, 255), 3);
 		}
 		mRgba.copyTo(output);
 		return result;
@@ -156,60 +147,113 @@ public class Process {
 		return result;
 	}
 
-	public Result getOneByte(Mat undistorted, List<Point> centerpoints,
-			int samplediam) {
-		Mat mHsv = new Mat();
-		int numbits = centerpoints.size();
-		numbits = 9;
-
-		Imgproc.cvtColor(undistorted, mHsv, Imgproc.COLOR_RGB2HSV); // optimize
+	// samples, reads mRgba
+	public Result samplegrid(Mat undistorted, int width, int height) {
+		int numbits = 9; // We'll soon put in a byte interfaces essentially its
+		// 8+1
+		int samplediam = 6; // this means a 8x8 grid centered around the square
+		List<Point> centerpoints = new ArrayList<Point>();
+		int divx = width / numbits;
+		int ystart = (int) Math.floor(0 * (double) (height)); // Supposedly the
+		// code is of
+		// 2.5% heights
 		double[] divsum = new double[numbits];
 
-		for (int i = 0; i < (numbits - 1); i++) {
-			divsum[i] = 0;
-			for (int y = 0; y < samplediam; y++) {
-				for (int x = 0; x < samplediam; x++) {
-					double s = mHsv.get((int) Math.floor(centerpoints.get(i).y
-							+ y), (int) Math.floor(centerpoints.get(i).x + x))[1];
-					double sf = mHsv.get((int) Math.floor(centerpoints
-							.get(i + 1).y
-							+ y), (int) Math.floor(centerpoints.get(i + 1).x
-							+ x))[1];
+		Mat mHsv = new Mat();
+		Imgproc.cvtColor(undistorted, mHsv, Imgproc.COLOR_RGB2HSV); // optimize
 
-					divsum[i] = Math.abs(s - sf) + divsum[i];
+		for (int i = 0; i < numbits; i++)
+			centerpoints.add(new Point(ystart, divx / 2 + i * divx - samplediam
+					/ 2));
+
+		for (int i = 0; i < (numbits - 1); i++) {
+			divsum[numbits - 1 - i] = 0;
+			for (int y = 0; y < (samplediam); y++) {
+				for (int x = 0; x < (samplediam); x++) {
+					double s = mHsv.get((int) Math.floor(centerpoints
+							.get(numbits - 1 - i).y
+							+ y), (int) Math.floor(centerpoints.get(numbits - 1
+							- i).x
+							+ x))[1];
+					double sf = mHsv.get((int) Math.floor(centerpoints
+							.get(numbits - 2 - i).y
+							+ y), (int) Math.floor(centerpoints.get(numbits - 2
+							- i).x
+							+ x))[1];
+					divsum[numbits - 1 - i] = Math.abs(s - sf)
+							+ divsum[numbits - 1 - i];
+
+					double r = undistorted.get((int) Math.floor(centerpoints
+							.get(numbits - 1 - i).y
+							+ y), (int) Math.floor(centerpoints.get(numbits - 1
+							- i).x
+							+ x))[0];
+					double g = undistorted.get((int) Math.floor(centerpoints
+							.get(numbits - 1 - i).y
+							+ y), (int) Math.floor(centerpoints.get(numbits - 1
+							- i).x
+							+ x))[1];
+					double b = undistorted.get((int) Math.floor(centerpoints
+							.get(numbits - 1 - i).y
+							+ y), (int) Math.floor(centerpoints.get(numbits - 1
+							- i).x
+							+ x))[2];
+
+					Core.circle(undistorted, new Point(centerpoints.get(numbits
+							- 1 - i).x
+							+ 30 * samplediam, centerpoints
+							.get(numbits - 1 - i).y
+							+ samplediam), samplediam,
+							new Scalar(r, g, b, 255), -1);
 				}
 			}
 		}
 
+		double min_threshold = 10000000;
+		double max_threshold = 0;
 		double threshold = 0;
 		for (int i = 0; i < (numbits - 1); i++) {
 			threshold = threshold + divsum[i];
+			// if (divsum[i] > max_threshold) max_threshold = divsum[i];
+			// //choose one or the other
+			// if (divsum[i] < min_threshold) min_threshold = divsum[i];
+			// //choose one or the other
 		}
 		threshold = threshold / numbits;
+		// threshold = (max_threshold - min_threshold)/2;
 
 		int byteval = 0;
 		for (int i = 0; i < (numbits - 1); i++) {
-			if (divsum[i] > threshold) {
+			Core.putText(undistorted, Double.toString(divsum[numbits - 1 - i]),
+					centerpoints.get(i), 3/* CV_FONT_HERSHEY_COMPLEX */, 1,
+					new Scalar(255, 0, 0, 255), 3);
+
+			if (divsum[numbits - 1 - i] > threshold) {
+
 				byteval = byteval + 1;
+				Core.circle(undistorted, new Point(centerpoints.get(numbits - 2
+						- i).x
+						+ 20 * samplediam, centerpoints.get(numbits - 2 - i).y
+						+ samplediam), samplediam, new Scalar(255, 0, 0, 255),
+						-1);
 			} else {
 				byteval = byteval + 0;
+				Core.circle(undistorted, new Point(centerpoints.get(numbits - 2
+						- i).x
+						+ 20 * samplediam, centerpoints.get(numbits - 2 - i).y
+						+ samplediam), samplediam, new Scalar(0, 255, 0, 255),
+						-1);
 			}
 			if (i != (numbits - 2))
 				byteval = byteval << 1;
 		}
+		Core.putText(undistorted, String.format("%.2f", threshold), new Point(
+				200, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1, new Scalar(255,
+				0, 0, 255), 3);
+		Core.putText(undistorted, "S: " + Integer.toString(byteval), new Point(
+				400, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 2, new Scalar(255,
+				0, 0, 255), 3);
+
 		return new Result(byteval, threshold);
-	}
-
-	// samples, reads mRgba
-	public List<Point> samplegrid(int width, int height, int ystart,
-			int samplediam) {
-		int numbits = 9; // essentially it 8+1
-		List<Point> centerpoints = new ArrayList<Point>();
-		int divx = height / numbits;
-
-		for (int i = 0; i < numbits; i++)
-			centerpoints.add(new Point(divx / 2 + i * divx - samplediam / 2,
-					ystart));
-		return centerpoints;
 	}
 }
