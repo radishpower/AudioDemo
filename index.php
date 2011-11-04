@@ -1,6 +1,7 @@
 <html>  
 <LINK href="style.css" rel="stylesheet" type="text/css"> 
  <head>  
+ 
   <script type="application/javascript">  
  function encode(orig){
  var encoded = "0";
@@ -21,8 +22,10 @@ function draw() {
 	var vidHeight = 165;
 	var width = 400;
 	var height = 40;
-	var gray = "rgb(127,127,127)";
-	var green = "rgb(19,200,19)";
+	var grayLeft = "rgb(240,240,240)";
+	var grayRight = "rgb(78,78,78)";
+	var colorLeft = "rgb(255,255,26)";
+	var colorRight = "rgb(20,20,255)";
 	//generate random ids, but all according to frame number modulo numVideos
 	for (var i = 0; i<numVideos; ++i){
 		ids[i] = ((numVideos)*2*(i+1)%256)+i;
@@ -35,13 +38,20 @@ function draw() {
 		}
 		var top = encode(top_orig);
 	for (var i = 0; i < ids.length; ++i){
-		var canvasID = new String(""+i);
-		while (canvasID.length < 2){
-			canvasID = "0"+canvasID;
+		var canvasIDLeft = new String(""+i);
+		var canvasIDRight = new String(""+(i+8));
+		while (canvasIDLeft.length < 2){
+			canvasIDLeft = "0"+canvasIDLeft;
 		}
-		canvasID = "frame" + canvasID;
-		var canvas = document.getElementById(canvasID);  
-		var ctx = canvas.getContext("2d"); 
+		while (canvasIDRight.length < 2){
+			canvasIDRight = "0" + canvasIDRight;
+		}
+		canvasIDLeft = "frame" + canvasIDLeft;
+		canvasIDRight = "frame" + canvasIDRight;
+		var canvasLeft = document.getElementById(canvasIDLeft);  
+		var canvasRight = document.getElementById(canvasIDRight);
+		var ctxLeft = canvasLeft.getContext("2d"); 
+		var ctxRight = canvasRight.getContext("2d");
 		var bottom_orig = ids[i].toString(2);
 		while (bottom_orig.length < 8){
 			bottom_orig = "0"+bottom_orig;
@@ -49,33 +59,43 @@ function draw() {
 		var bottom = encode(bottom_orig);
 		var values = "";
 		var prev_val = 0;
-		var prev = gray;
 		
 		for (var j = 0; j < 8; ++j){
 			var bit = parseInt(top.charAt(j));
 			if (bit == 0){
-				ctx.fillStyle = gray;
+				ctxLeft.fillStyle = grayLeft;
+				ctxRight.fillStyle = grayRight;
 			}
 			else{
-				ctx.fillStyle = green;
+				ctxLeft.fillStyle = colorLeft;
+				ctxRight.fillStyle = colorRight;
 			}
-			ctx.fillRect(j*width/8, 0, width/8, height);
-			ctx.fillStyle = "rgb(0,0,0)";
-			ctx.fillRect(0, height, width, vidHeight);
+			ctxLeft.fillRect(j*width/8, 0, width/8, height);
+			ctxLeft.fillStyle = "rgb(0,0,0)";
+			ctxLeft.fillRect(0, height, width, vidHeight);
+			ctxRight.fillRect(j*width/8, 0, width/8, height);
+			ctxRight.fillStyle = "rgb(0,0,0)";
+			ctxRight.fillRect(0, height, width, vidHeight);
+
 			if (j < 8-bottom.length){
-				ctx.fillStyle = gray;
+				ctxLeft.fillStyle = grayLeft;
+				ctxRight.fillStyle = grayRight;
 			}
 			else{
 				var bit = parseInt(bottom.charAt(j-(8-bottom.length)));
 				if (bit == 0){
-					ctx.fillStyle = gray;
+					ctxLeft.fillStyle = grayLeft;
+					ctxRight.fillStyle = grayRight;
 				}
 				else{
-					ctx.fillStyle = green;
+					ctxLeft.fillStyle = colorLeft;
+					ctxRight.fillStyle = colorRight;
 				}
 			}
 			
-			ctx.fillRect(j*width/8, height+vidHeight, width/8, height);
+			ctxLeft.fillRect(j*width/8, height+vidHeight, width/8, height);
+			ctxRight.fillRect(j*width/8, height+vidHeight, width/8, height);
+
 		}
 	}
 }  
@@ -83,8 +103,7 @@ function draw() {
  </head>  
 <body onload="draw()">  
 	<div id = 'content'>
-		<div id = 'center'>
-			<div id = 'videobox'>
+			<div class = 'videobox' id = 'left'>
 				<div class = 'video'>
 					<canvas width = "400" height = "245" id="frame00"></canvas> 
 						<video width = "400" autoplay = "autoplay" loop = "loop">
@@ -137,10 +156,62 @@ function draw() {
 						</video>
 				</div>
 			</div>
-	   </div>
+			<div class = 'videobox' id = 'right'>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame08"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo00.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame09"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo01.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame10"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo02.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame12"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo04.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<h1>Audio Demo</h1>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame13"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo05.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame14"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo06.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame15"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo07.mp4' type = "video/mp4" >
+						</video>
+				</div>
+				<div class = 'video'>
+					<canvas width = "400" height = "245" id="frame11"></canvas> 
+						<video width = "400" autoplay = "autoplay" loop = "loop">
+							<source src = 'walle/demo03.mp4' type = "video/mp4" >
+						</video>
+				</div>
+			</div>
 	</div>
  </body>  
-</html>  
+</html>
 <!--<html>
 <head>
 
@@ -185,14 +256,14 @@ function drawBars(){
 </script>
 </head>
 <body onload = 'drawBars()'>
+</head>
+<body>
 <h1>Audio Demo v1</h1>
 
 <div id = 'content'>
 	<div id = 'center'>
 		<div id = 'videobox'>
 			
-			<canvas width="400" id = 'frame00'></canvas>
-			<!--
 			<div class = 'video' id = 'one'>
 				<video width = "400" autoplay = "autoplay" loop = "loop">
 					<source src = 'walle/demo00.mp4' type = "video/mp4" >
@@ -232,8 +303,8 @@ function drawBars(){
 				<video width ="400" autoplay = "autoplay" loop = "loop">
 					<source src = 'walle/demo07.mp4' type = "video/mp4" />
 				</video>
-			</div>-->
-		<!--</div>
+			</div>
+		</div>
 	</div>
 </div>
 </body>
