@@ -25,10 +25,10 @@ public class AudioDemoActivity extends Activity {
 	public static int[] ids;
 	public static int viewMode = VIEW_MODE_RGBA;
 	public static int numFiles = 8;
+	public static long curTime = 0;
 
-	// public static final String AUDIO_DIR =
-	// "/Android/org.opencv.samples.radishower/sound_samples";
-	public static final String AUDIO_DIR = "/sound_samples/";
+	//public static final String AUDIO_DIR = "/Android/org.opencv.samples.radishower/sound_samples";
+	public static final String AUDIO_DIR = "/Audio Demo/sound_samples/";
 
 	public AudioDemoActivity() {
 		Log.i(TAG, "Instantiated new " + this.getClass());
@@ -47,10 +47,9 @@ public class AudioDemoActivity extends Activity {
 			box = new SoundBox();
 			String[] files = new String[numFiles];
 			ids = new int[numFiles];
-			for (int i = 0; i < numFiles; ++i) {
-				files[i] = Environment.getExternalStorageDirectory()
-						+ AudioDemoActivity.AUDIO_DIR
-						+ String.format("%02d", i) + ".wav";
+			for (int i = 0; i<numFiles; ++i){
+				files[i] = Environment.getExternalStorageDirectory() +
+								AudioDemoActivity.AUDIO_DIR + String.format("%02d", i) + ".wav";
 				ids[i] = box.load(files[i]);
 			}
 		}
@@ -71,7 +70,7 @@ public class AudioDemoActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		Log.i(TAG, "onCreateOptionsMenu");
 		mItemPreviewRGBA = menu.add("Preview RGBA");
-		mItemPreviewAUDIO = menu.add("Preview GRAY");
+		mItemPreviewAUDIO = menu.add("Preview Audio");
 		return true;
 	}
 
@@ -89,7 +88,7 @@ public class AudioDemoActivity extends Activity {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		for (int i = 0; i < numFiles; ++i) {
+		for (int i = 0; i<numFiles; ++i){
 			box.pause(ids[i]);
 		}
 	}
