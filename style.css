@@ -1,13 +1,9 @@
-#center{
-	left:15%;
-	top:10%;
-	position:absolute;
-	width:1350px;
+body{
+	width:100%;
 }
 #content{
 	margin:0 auto;
 	padding-top:50px;
-	text-align:center;
 }
 h1{
 	font-family:'century gothic', arial, sans-serif;
@@ -27,11 +23,60 @@ h1{
 video{
 	top:40px;
 	position:absolute;
-	/*width:96%;*/
 }
 .videobox{
-	border:1px solid #000000;
-	margin-top:-60px;
+	margin-top:100px;
 	position:relative;
-	width:1680px;
+	height:1000px;
+}#left{
+	float:left;
+	width:50%;
 }
+#right{
+	float:right;
+	width:50%;
+}
+/*
+h1{
+	font-family:'century gothic', arial, sans-serif;
+	padding:0;
+	text-align:center; 
+}
+
+.video{
+	background-repeat:no-repeat;
+	display:inline-block;
+	height:400px;
+	float:left;
+	margin:30 15 30 15;
+	position:relative;
+	width:420px;
+}
+video{
+	margin-top:100px;
+	width:400px;
+}
+#one{
+	background-image:url('images/00.png');
+}
+#two{
+	background-image:url('images/01.png');
+}
+#three{
+	background-image:url('images/02.png');
+}
+#four{
+	background-image:url('images/03.png');
+}
+#five{
+	background-image:url('images/04.png');
+}
+#six{
+	background-image:url('images/05.png');
+}
+#seven{
+	background-image:url('images/06.png');
+}
+#eight{
+	background-image:url('images/07.png');
+}*/
