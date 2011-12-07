@@ -12,6 +12,7 @@ import org.opencv.imgproc.Imgproc;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
@@ -20,9 +21,9 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
 	private Mat mRgba;
 	private Mat mGraySubmat;
 	private Mat mIntermediateMat;
-
-	Process processingobject = new Process();
-	
+	public static Mat cache;
+	//Process processingobject = new Process();
+	Posterize processingobject = new Posterize();
 	public AudioDemoActivityView(Context context) {
 		super(context);
 	}
@@ -40,6 +41,7 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
 
 			mRgba = new Mat();
 			mIntermediateMat = new Mat();
+			cache = new Mat();
 		}
 	}
 
@@ -57,11 +59,12 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
 	@Override
 	protected Bitmap processFrame(byte[] data) {
 		mYuv.put(0, 0, data);
-		SoundBox box = AudioDemoActivity.box;
+		//SoundBox box = AudioDemoActivity.box;
 		switch (AudioDemoActivity.viewMode) {
         case AudioDemoActivity.VIEW_MODE_AUDIO:
-            Process.Result result = processingobject.process(mYuv, getFrameHeight(), getFrameWidth(), mRgba);
-            long timeDiff = System.currentTimeMillis() - AudioDemoActivity.curTime;
+        	processingobject.process(mYuv, getFrameHeight(), getFrameWidth(), mRgba);
+            //Process.Result result = processingobject.process(mYuv, getFrameHeight(), getFrameWidth(), mRgba);
+            /*long timeDiff = System.currentTimeMillis() - AudioDemoActivity.curTime;
             if (result != null && result.threshold >= 500.0) {
             	// we got the byte!
             	Log.e("TAG", String.format("We got byte %d", result.value));
@@ -94,7 +97,7 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
             	}
             	else{
             		//buffer, in case locking onto the code is not constant
-            		if (timeDiff/1000.0 > 1.5){
+            		if (timeDiff/1000.0 > 2.0){
 	            		Log.e("TAG", String.format("Stop playing %02d.wav", AudioDemoActivity.curFrame));
 	            		AudioDemoActivity.isPlaying = false;
 	            		for (int i = 0; i<AudioDemoActivity.numFiles; ++i){
@@ -111,7 +114,7 @@ class AudioDemoActivityView extends AudioDemoActivityBase {
         				box.stop(i);
         			}
             	}
-            }
+            }*/
             break;
         case AudioDemoActivity.VIEW_MODE_RGBA:
             Imgproc.cvtColor(mYuv, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);

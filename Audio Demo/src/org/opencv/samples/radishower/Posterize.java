@@ -3,11 +3,15 @@ package org.opencv.samples.radishower;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.samples.radishower.Process.Result;
+
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 
 public class Posterize {
 	private Mat localYUV = new Mat();
@@ -46,13 +50,36 @@ public class Posterize {
 		Mat original = new Mat();
 		Imgproc.cvtColor(mYuv, original, Imgproc.COLOR_YUV420sp2RGB, 3);
 		
-		Mat resized = new Mat();
-		Imgproc.resize(original, resized, new Size(original.width(), original.height()));
-		
-		Mat cloned = new Mat();
-		Imgproc.pyrMeanShiftFiltering(resized, cloned, 5, 20, 2);
-		Imgproc.cvtColor(cloned, mRgba, Imgproc.COLOR_BGR2RGBA);
-		
+		if (!AudioDemoActivityView.cache.empty()){
+			int[][] diff = new int[original.height()/32][original.width()/32];
+			double mean = 0.0;
+			for (int r = 0; r < original.height(); r += 32){
+				for (int c = 0; c < original.width(); c += 32){
+					diff[r/32][c/32] = (int) Math.abs(original.get(r, c)[0] - AudioDemoActivityView.cache.get(r, c)[0]);
+					mean += diff[r/32][c/32];
+				}
+			}
+			mean /= (double)(((double)diff.length) * diff[0].length);
+			double std = 0.0;
+			for (int i = 0; i < diff.length; ++i){
+				for (int j = 0; j < diff[i].length; ++j){
+					std += Math.pow(diff[i][j] - mean, 2);
+				}
+			}
+			std = Math.sqrt(std/(((double)diff.length) * diff[0].length));
+			System.out.println(std);
+			//threshold for scene change
+			if (std >= 52.0){
+				Mat resized = new Mat();
+				Imgproc.resize(original, resized, new Size(original.width(), original.height()));
+				
+				Mat cloned = new Mat();
+				Imgproc.pyrMeanShiftFiltering(resized, cloned, 5, 20, 2);
+				Imgproc.cvtColor(cloned, mRgba, Imgproc.COLOR_BGR2RGBA);
+				mRgba.copyTo(output);
+			}
+		}
+		AudioDemoActivityView.cache = original;
 		//Imgproc.Canny(mGraySubmat, bwimg, 80, 100);
 		//Imgproc.cvtColor(mGraySubmat, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);		
 		//if(block_size>0)
@@ -65,6 +92,6 @@ public class Posterize {
         //			255, Imgproc.THRESH_BINARY_INV);
 		//Imgproc.cvtColor(bwimg, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);		
 		
-		mRgba.copyTo(output);
+		
 	}
 }
