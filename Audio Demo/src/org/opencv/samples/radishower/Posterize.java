@@ -68,16 +68,25 @@ public class Posterize {
 			}
 			std = Math.sqrt(std/(((double)diff.length) * diff[0].length));
 			System.out.println(std);
+			Mat cloned = new Mat();
 			//threshold for scene change
 			if (std >= 52.0){
 				Mat resized = new Mat();
 				Imgproc.resize(original, resized, new Size(original.width(), original.height()));
 				
-				Mat cloned = new Mat();
+				
 				Imgproc.pyrMeanShiftFiltering(resized, cloned, 5, 20, 2);
 				Imgproc.cvtColor(cloned, mRgba, Imgproc.COLOR_BGR2RGBA);
 				mRgba.copyTo(output);
 			}
+			else{
+				Imgproc.cvtColor(original, mRgba, Imgproc.COLOR_RGB2RGBA);
+				mRgba.copyTo(output);
+			}
+		}
+		else{
+			Imgproc.cvtColor(original, mRgba, Imgproc.COLOR_RGB2RGBA);
+			mRgba.copyTo(output);
 		}
 		AudioDemoActivityView.cache = original;
 		//Imgproc.Canny(mGraySubmat, bwimg, 80, 100);
