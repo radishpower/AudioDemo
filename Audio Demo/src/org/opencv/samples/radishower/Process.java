@@ -3,11 +3,15 @@ package org.opencv.samples.radishower;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 
 public class Process {
 	private Mat localYUV = new Mat();
@@ -28,7 +32,7 @@ public class Process {
 
 	public Result process(Mat mYuv, int width, int height, Mat output) {
 		Result result = null;
-
+		
 		corners.clear();
 		for (int i = 0; i < 4; i++) {
 			corners.add(new Point(0, 0));
@@ -121,10 +125,36 @@ public class Process {
 
 		Imgproc.cvtColor(localYUV, mRgba, Imgproc.COLOR_YUV420sp2RGB, 4);
 		Core.fillConvexPoly(mRgba, corners, new Scalar(0, 0, 128, 128));
+		Mat original = new Mat();
+		Imgproc.cvtColor(mYuv, original, Imgproc.COLOR_YUV420sp2RGB, 3);
+		
 		if (result != null) {
+			AudioDemoActivityView.cache = original;
 			Core.putText(mRgba, Integer.toString(result.value),
 					new Point(100, 100), 3/* CV_FONT_HERSHEY_COMPLEX */, 1,
 					new Scalar(0, 255, 0, 255), 3);
+		}
+		else{
+			if (!AudioDemoActivityView.cache.empty()){
+				int[][] diff = new int[original.height()/32][original.width()/32];
+				double mean = 0.0;
+				for (int r = 0; r < original.height(); r += 32){
+					for (int c = 0; c < original.width(); c += 32){
+						diff[r/32][c/32] = (int) Math.abs(original.get(r, c)[0] - AudioDemoActivityView.cache.get(r, c)[0]);
+						mean += diff[r/32][c/32];
+					}
+				}
+				mean /= (double)(((double)diff.length) * diff[0].length);
+				double std = 0.0;
+				for (int i = 0; i < diff.length; ++i){
+					for (int j = 0; j < diff[i].length; ++j){
+						std += Math.pow(diff[i][j] - mean, 2);
+					}
+				}
+				std = Math.sqrt(std/(((double)diff.length) * diff[0].length));
+				System.out.println(std);
+			}
+			//AudioDemoActivityView.cache = original;
 		}
 		mRgba.copyTo(output);
 		return result;
